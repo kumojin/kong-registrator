@@ -1,0 +1,44 @@
+#!/bin/bash
+#-------------------------------------------------------------
+# This script is used to register a service in Kong
+#
+# Args:
+#  $1: service name
+#  $2: request path
+#  $3: service url
+#-------------------------------------------------------------
+
+if (( $# < 3 ))
+then
+  echo "ERROR: Need at least 3 arguments :"
+  echo "  ${0} <name> <request_path> <upstream_url> [<preserve_host> <strip_request_path>]"
+  exit 1
+fi
+
+if [[ -z ${KONG_SERVER} ]]; then
+  echo "ERROR: You need to define the KONG_SERVER variable pointing to the <HOST:PORT>"
+  echo "       of your kong server instance."
+  exit 1
+fi
+
+NAME="${1}"
+REQUEST_PATH="${2}"
+UPSTREAM_URL="${3}"
+PRESERVE_HOST="${4:-false}"
+STRIP_REQUEST_PATH="${5:-false}"
+
+
+JSON_REGISTER=" \
+{
+    \"name\": \"${NAME}\",
+    \"uris\": \"${REQUEST_PATH}\",
+    \"upstream_url\": \"${UPSTREAM_URL}\",
+    \"preserve_host\": \"${PRESERVE_HOST}\",
+    \"strip_uri\": \"${STRIP_REQUEST_PATH}\"
+}
+"
+
+echo "JSON is:"
+echo "${JSON_REGISTER}"
+
+curl -s -X POST -H "Content-Type: application/json" -d "${JSON_REGISTER}" ${KONG_SERVER}/apis/

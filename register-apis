@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+if [[ -z ${KONG_SERVER} ]]; then
+  echo "ERROR: You need to define the KONG_SERVER variable pointing to the <HOST:PORT>"
+  echo "       of your kong server instance."
+  exit 1
+fi
+
+for api in "$@"; do
+  echo "api: $api"
+
+  params=`echo $api | sed -e 's/;/ /g'`
+  echo "params: $params"
+
+  bash -c "./register-api $params"
+done
