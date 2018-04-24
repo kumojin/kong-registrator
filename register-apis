@@ -14,3 +14,6 @@ for api in "$@"; do
 
   bash -c "./register-api $params"
 done
+
+exit 0
+

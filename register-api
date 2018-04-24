@@ -42,3 +42,4 @@ echo "JSON is:"
 echo "${JSON_REGISTER}"
 
 curl -s -X POST -H "Content-Type: application/json" -d "${JSON_REGISTER}" ${KONG_SERVER}/apis/
+

@@ -1,0 +1,20 @@
+#!/bin/bash
+#-------------------------------------------------------------------------
+# This script is used to enable/config already installed plugins for Kong
+#-------------------------------------------------------------------------
+
+if [[ -z ${KONG_SERVER} ]]; then
+  echo "ERROR: You need to define the KONG_SERVER variable pointing to the <HOST:PORT>"
+  echo "       of your kong server instance."
+  exit 1
+fi
+
+for plugin in "$@"; do
+  echo "plugin: $plugin"
+
+  params=`echo $plugin | sed -e 's/;/ /g'`
+  echo "params: $params"
+
+  bash -c "./enable-plugin $params"
+done
+exit 0

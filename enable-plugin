@@ -1,0 +1,68 @@
+#!/bin/bash
+#-------------------------------------------------------------------------
+# This script is used to enable/config already installed plugins for Kong
+#-------------------------------------------------------------------------
+
+if [[ -z ${KONG_SERVER} ]]; then
+  echo "ERROR: You need to define the KONG_SERVER variable pointing to the <HOST:PORT>"
+  echo "       of your kong server instance."
+  exit 1
+fi
+
+function enablePluginForApi() {
+  local plugin_name=$1
+  local plugin_config=$2
+  local api_name=$3
+
+  local request_cmd=$(curl -i -o - --silent \
+    -X POST ${KONG_SERVER}/apis/${api_name}/plugins \
+		--data name=${plugin_name} \
+    --data "${plugin_config}")
+
+	handlePluginResponse "${request_cmd}" "${plugin_name}" "${api_name} api"
+}
+
+function enablePluginForAllApi() {
+  local plugin_name=$1
+  local plugin_config=$2
+
+  local request_cmd=$(curl -i -v -o - --silent \
+    -X POST ${KONG_SERVER}/plugins \
+		--data name=${plugin_name} \
+    --data "${plugin_config}")
+
+  handlePluginResponse "${request_cmd}" "${plugin_name}" "All api"
+}
+
+function handlePluginResponse() {
+	local response=$1
+	local plugin_name=$2
+	local api_name=$3
+
+	echo $1 - $2 - $3
+
+	local http_status=$(echo "${response}" | grep HTTP |  awk '{print $2}')
+	echo $http_status
+
+	if [ "$http_status" -eq "201" ]; then
+		printf "\t%s\n" "${plugin_name} enabled for ${api_name}"
+	elif [ "$http_status" -eq "409" ]; then
+		printf "\t%s\n" "${plugin_name} already enabled for ${api_name}"
+	else
+		printf "\t%s\n" "ERROR: Unable to enable ${plugin_name} for ${api_name}"
+		printf "\t%s\n" ${response}
+	fi
+}
+
+echo '-----'
+echo $#
+echo '-----'
+if (( $# == 2 )); then
+	enablePluginForAllApi "$1" "$2"
+elif (( $# == 3 )); then
+	enablePluginForApi "$1" "$2" "$3"
+else
+	echo "ERROR: Need at least 2 arguments :"
+  echo "  ${0} <plugin-name> <plugin-configuration> [<api>]"
+  exit 1
+fi
