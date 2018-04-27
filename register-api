@@ -8,7 +8,7 @@
 #  $3: service url
 #-------------------------------------------------------------
 
-if (( $# < 3 ))
+if (( "${#}" < 3 ))
 then
   echo "ERROR: Need at least 3 arguments :"
   echo "  ${0} <name> <request_path> <upstream_url> [<preserve_host> <strip_request_path>]"
@@ -28,7 +28,7 @@ PRESERVE_HOST="${4:-false}"
 STRIP_REQUEST_PATH="${5:-false}"
 
 
-JSON_REGISTER=" \
+JSON_REGISTER="\
 {
     \"name\": \"${NAME}\",
     \"uris\": \"${REQUEST_PATH}\",
@@ -41,5 +41,5 @@ JSON_REGISTER=" \
 echo "JSON is:"
 echo "${JSON_REGISTER}"
 
-curl -s -X POST -H "Content-Type: application/json" -d "${JSON_REGISTER}" ${KONG_SERVER}/apis/
+curl -s -X PUT -H "Content-Type: application/json" -d "${JSON_REGISTER}" "${KONG_SERVER}/apis/"
 
